@@ -5,5 +5,5 @@ require 'spec/expectations'
 
 include Hexarch2
 Before do
-  @app = App.new EventStorage.new
+  @app = App.new Hash.new
 end

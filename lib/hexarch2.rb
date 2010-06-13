@@ -1,13 +1,10 @@
 module Hexarch2
   class App
-    def initialize(event_storage, reporting_storage)
-      @event_storage = event_storage
-      @reporting_storage = reporting_storage
+    def initialize(storage)
+      @storage = storage
       @event_handlers = Hash.new {|hash, k| hash[k] = [] }
-      @event_handlers[:account_created] << @event_storage
-      @event_handlers[:account_created] << @reporting_storage
-      @event_handlers[:amount_withdrawn] << @event_storage
-      @event_handlers[:amount_withdrawn] << @reporting_storage
+      @event_handlers[:account_created] << @storage
+      @event_handlers[:amount_withdrawn] << @storage
     end
 
     def create_account(account_id, balance)
@@ -21,13 +18,13 @@ module Hexarch2
 
     def fetch_account(account_id)
       account = Account.new(account_id, self)
-      events = @event_storage.fetch_events account_id
+      events = @storage.fetch_events account_id
       events.each {|e| account.replay(e) }
       account
     end
 
     def balance_of(account_id)
-      @reporting_storage.balance_of account_id
+      fetch_account(account_id).balance
     end
 
     def publish(event_name, *args)
@@ -36,6 +33,8 @@ module Hexarch2
   end
 
   class Account
+    attr_reader :balance
+
     def initialize(id, event_publisher)
       @id = id
       @event_publisher = event_publisher
@@ -75,24 +74,6 @@ module Hexarch2
 
     def fetch_events(account_id)
       @account_events[account_id]
-    end
-  end
-
-  class ReportingStorage
-    def initialize
-      @account_balances = Hash.new {|h, k| hash[k] = [] }
-    end
-
-    def account_created(account_id, initial_balance)
-      @account_balances[account_id] = initial_balance
-    end
-
-    def amount_withdrawn(account_id, amount, new_balance)
-      @account_balances[account_id] = new_balance
-    end
-
-    def balance_of(account_id)
-      @account_balances[account_id]
     end
   end
 end

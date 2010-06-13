@@ -1,9 +1,5 @@
-Feature: something something
-  In order to something something
-  A user something something
-  something something something
-
-  Scenario: something something
-    Given inspiration
-    When I create a sweet new gem
-    Then everyone should see how awesome I am
+Feature: Withdrawing money from an account
+  Scenario: Enough money in account to cover request
+    Given an account abc123 with a balance of $500
+    When I withdraw $200 from abc123
+    Then abc123 should have a balance of $300
